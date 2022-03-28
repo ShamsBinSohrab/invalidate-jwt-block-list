@@ -9,7 +9,8 @@ import java.util.concurrent.TimeUnit;
 public class AuthorizationService {
 
   private final ConcurrentHashMap<Date, String> tokenBlockList = new ConcurrentHashMap<>();
-  private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+  private final ScheduledExecutorService executorService =
+      Executors.newSingleThreadScheduledExecutor();
 
   private final JwtUtil jwtUtil;
 
@@ -30,9 +31,7 @@ public class AuthorizationService {
   public void doSomething(String token) {
     if (tokenBlockList.containsValue(token)) {
       System.err.println("Token is blocked");
-      return;
-    }
-    if (jwtUtil.validate(token)) {
+    } else if (jwtUtil.validate(token)) {
       System.out.println("Work is done");
     } else {
       System.err.println("Token is expired");
@@ -43,7 +42,7 @@ public class AuthorizationService {
     return () -> {
       var now = new Date();
       var keySet = tokenBlockList.keySet();
-      keySet.removeIf(key -> key.after(now));
+      keySet.removeIf(key -> key.before(now));
       System.out.println("Blocked key count: " + tokenBlockList.size());
     };
   }
